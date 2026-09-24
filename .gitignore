@@ -1,0 +1,62 @@
+node_modules/
+.expo/
+.expo-shared/
+.expo-cache/
+.expo-dev-client/
+dist/
+web-build/
+build/
+out/
+
+*.log*
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+pnpm-debug.*
+*.tsbuildinfo
+
+.env
+.env.local
+.env.*.local
+
+# Native
+android/
+ios/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+*.keystore
+
+# Expo / EAS
+*.apk
+*.aab
+*.ipa
+*.app
+expo-env.d.ts
+credentials.json
+
+# Metro
+.metro-health-check*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.history/
+
+# OS
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Package locks (可選：若你們用 npm 則保留 package-lock.json；
+# 若多人協力建議留，這裡不忽略，請視團隊需求調整)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
