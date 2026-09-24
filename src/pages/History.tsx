@@ -65,6 +65,11 @@ export default function History({ onBack }: HistoryProps) {
             );
           })
         )}
+        {!settings.isVip && (
+          <Text style={s.vipHint}>
+            免費版顯示最近 5 天 · 升級 VIP 查看完整歷史
+          </Text>
+        )}
         <View style={{ height: 40 }} />
       </ScrollView>
     </View>
@@ -103,6 +108,13 @@ const s = StyleSheet.create({
   emptyText: {
     fontSize: 15,
     color: '#94A3B8',
+  },
+  vipHint: {
+    textAlign: 'center',
+    fontSize: 13,
+    color: '#94A3B8',
+    marginHorizontal: 20,
+    marginTop: 8,
   },
   card: {
     backgroundColor: '#fff',

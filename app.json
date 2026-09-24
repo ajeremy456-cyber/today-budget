@@ -21,7 +21,41 @@
       "package": "com.todaybudget.app"
     },
     "web": {},
-    "plugins": [],
+    "plugins": [
+      [
+        "expo-widgets",
+        {
+          "widgets": [
+            {
+              "name": "TodayBudgetWidget",
+              "displayName": "今日可花",
+              "description": "顯示今天還能花多少",
+              "ios": {
+                "supportedFamilies": ["systemSmall"]
+              }
+            }
+          ]
+        }
+      ],
+      [
+        "react-native-android-widget",
+        {
+          "fonts": [],
+          "widgets": [
+            {
+              "name": "TodayBudgetWidget",
+              "label": "今日可花",
+              "description": "顯示今天還能花多少",
+              "minWidth": "180dp",
+              "minHeight": "110dp",
+              "targetCellWidth": 2,
+              "targetCellHeight": 2,
+              "updatePeriodMillis": 1800000
+            }
+          ]
+        }
+      ]
+    ],
     "extra": {
       "eas": {
         "projectId": "85c7e37f-36a2-4201-85d7-76b19a30af86"

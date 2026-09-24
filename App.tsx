@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
+import { Platform } from 'react-native';
 import { load, save, KEYS } from './src/services/storage';
 import { type AppSettings, DEFAULT_SETTINGS } from './src/types/budget';
 import Home from './src/pages/Home';
 import History from './src/pages/History';
 import Settings from './src/pages/Settings';
 import Welcome from './src/pages/Welcome';
+
+// 註冊 Android 桌面 Widget Task Handler（需開發版建置；Expo Go / Web 環境自動略過，不影響原本功能）
+if (Platform.OS === 'android') {
+  import('./src/widgets/registerWidgetTaskHandler').catch(() => {});
+}
 
 type Page = 'home' | 'history' | 'settings';
 

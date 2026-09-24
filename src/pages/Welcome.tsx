@@ -1,32 +1,26 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity,
+  View, Text, TouchableOpacity,
   StyleSheet, Platform, ScrollView,
 } from 'react-native';
-import { CURRENCY_OPTIONS, type AppSettings } from '../types/budget';
+import {
+  CURRENCY_OPTIONS, FREE_DAILY_BUDGET, type AppSettings,
+} from '../types/budget';
 
 interface WelcomeProps {
   onComplete: (settings: AppSettings) => void;
 }
 
 export default function Welcome({ onComplete }: WelcomeProps) {
-  const [budgetInput, setBudgetInput] = useState('1000');
   const [selectedCurrency, setSelectedCurrency] = useState('NT$');
-  const [step, setStep] = useState<1 | 2>(1);
 
-  const handleNext = () => {
-    const budget = parseInt(budgetInput);
-    if (isNaN(budget) || budget <= 0) return;
-    setStep(2);
-  };
-
+  // 免費版每日預算固定 1000（VIP 可在設定頁自訂）
   const handleStart = () => {
-    const budget = parseInt(budgetInput);
-    if (isNaN(budget) || budget <= 0) return;
     onComplete({
-      dailyBudget: budget,
+      dailyBudget: FREE_DAILY_BUDGET,
       currency: selectedCurrency,
       rollover: false,
+      isVip: false,
     });
   };
 
@@ -35,107 +29,45 @@ export default function Welcome({ onComplete }: WelcomeProps) {
       contentContainerStyle={s.container}
       keyboardShouldPersistTaps="handled"
     >
-      {step === 1 ? (
-        <>
-          <View style={s.topArea}>
-            <Text style={s.emoji}>💰</Text>
-            <Text style={s.title}>今日可花</Text>
-            <Text style={s.subtitle}>
-              每天只需要知道一件事{'\n'}今天還能花多少
+      <View style={s.topArea}>
+        <Text style={s.emoji}>💰</Text>
+        <Text style={s.title}>今日可花</Text>
+        <Text style={s.subtitle}>
+          每天只需要知道一件事{'\n'}今天還能花多少
+        </Text>
+      </View>
+
+      <View style={s.formArea}>
+        <Text style={s.label}>選擇幣別</Text>
+        <Text style={s.hint}>
+          每日預算固定 {FREE_DAILY_BUDGET} 元（VIP 可自訂）
+        </Text>
+
+        {CURRENCY_OPTIONS.map(option => (
+          <TouchableOpacity
+            key={option.value}
+            style={[
+              s.currencyOption,
+              selectedCurrency === option.value && s.currencyOptionActive,
+            ]}
+            onPress={() => setSelectedCurrency(option.value)}
+          >
+            <Text style={[
+              s.currencyOptionText,
+              selectedCurrency === option.value && s.currencyOptionTextActive,
+            ]}>
+              {option.label}
             </Text>
-          </View>
+            {selectedCurrency === option.value && (
+              <Text style={s.checkmark}>✓</Text>
+            )}
+          </TouchableOpacity>
+        ))}
 
-          <View style={s.formArea}>
-            <Text style={s.label}>設定每日預算</Text>
-            <Text style={s.hint}>你每天想花多少錢？</Text>
-
-            <View style={s.inputRow}>
-              <Text style={s.currencyPrefix}>{selectedCurrency}</Text>
-              <TextInput
-                style={s.input}
-                value={budgetInput}
-                onChangeText={setBudgetInput}
-                keyboardType="numeric"
-                placeholder="1000"
-                placeholderTextColor="#94A3B8"
-                autoFocus
-                returnKeyType="done"
-                onSubmitEditing={handleNext}
-              />
-            </View>
-
-            <View style={s.presetRow}>
-              {[500, 1000, 1500, 2000].map(amount => (
-                <TouchableOpacity
-                  key={amount}
-                  style={[
-                    s.presetBtn,
-                    budgetInput === amount.toString() && s.presetBtnActive,
-                  ]}
-                  onPress={() => setBudgetInput(amount.toString())}
-                >
-                  <Text style={[
-                    s.presetBtnText,
-                    budgetInput === amount.toString() && s.presetBtnTextActive,
-                  ]}>
-                    {amount}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <TouchableOpacity
-              style={[
-                s.nextBtn,
-                (!budgetInput || parseInt(budgetInput) <= 0) && s.nextBtnDisabled,
-              ]}
-              onPress={handleNext}
-              disabled={!budgetInput || parseInt(budgetInput) <= 0}
-            >
-              <Text style={s.nextBtnText}>下一步</Text>
-            </TouchableOpacity>
-          </View>
-        </>
-      ) : (
-        <>
-          <View style={s.topArea}>
-            <Text style={s.emoji}>🌏</Text>
-            <Text style={s.title}>選擇幣別</Text>
-            <Text style={s.subtitle}>預設為新台幣</Text>
-          </View>
-
-          <View style={s.formArea}>
-            {CURRENCY_OPTIONS.map(option => (
-              <TouchableOpacity
-                key={option.value}
-                style={[
-                  s.currencyOption,
-                  selectedCurrency === option.value && s.currencyOptionActive,
-                ]}
-                onPress={() => setSelectedCurrency(option.value)}
-              >
-                <Text style={[
-                  s.currencyOptionText,
-                  selectedCurrency === option.value && s.currencyOptionTextActive,
-                ]}>
-                  {option.label}
-                </Text>
-                {selectedCurrency === option.value && (
-                  <Text style={s.checkmark}>✓</Text>
-                )}
-              </TouchableOpacity>
-            ))}
-
-            <TouchableOpacity style={s.nextBtn} onPress={handleStart}>
-              <Text style={s.nextBtnText}>開始使用</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={s.backBtn} onPress={() => setStep(1)}>
-              <Text style={s.backBtnText}>← 修改預算</Text>
-            </TouchableOpacity>
-          </View>
-        </>
-      )}
+        <TouchableOpacity style={s.nextBtn} onPress={handleStart}>
+          <Text style={s.nextBtnText}>開始使用</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 }
@@ -184,54 +116,6 @@ const s = StyleSheet.create({
     color: '#475569',
     marginBottom: 14,
   },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderWidth: 0.5,
-    borderColor: '#E2E8F0',
-    borderRadius: 14,
-    paddingHorizontal: 18,
-    marginBottom: 14,
-  },
-  currencyPrefix: {
-    fontSize: 22,
-    color: '#64748B',
-    marginRight: 8,
-  },
-  input: {
-    flex: 1,
-    fontSize: 28,
-    color: '#0F172A',
-    fontWeight: '300',
-    paddingVertical: 16,
-  },
-  presetRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 28,
-  },
-  presetBtn: {
-    flex: 1,
-    backgroundColor: '#fff',
-    borderWidth: 0.5,
-    borderColor: '#E2E8F0',
-    borderRadius: 10,
-    paddingVertical: 10,
-    alignItems: 'center',
-  },
-  presetBtnActive: {
-    borderColor: '#2563EB',
-    backgroundColor: '#EFF6FF',
-  },
-  presetBtnText: {
-    fontSize: 14,
-    color: '#64748B',
-  },
-  presetBtnTextActive: {
-    color: '#2563EB',
-    fontWeight: '500',
-  },
   nextBtn: {
     backgroundColor: '#2563EB',
     borderRadius: 14,
@@ -239,21 +123,10 @@ const s = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
-  nextBtnDisabled: {
-    backgroundColor: '#CBD5E1',
-  },
   nextBtnText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '500',
-  },
-  backBtn: {
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  backBtnText: {
-    fontSize: 14,
-    color: '#2563EB',
   },
   currencyOption: {
     flexDirection: 'row',

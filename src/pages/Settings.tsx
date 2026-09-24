@@ -4,7 +4,7 @@ import {
   StyleSheet, Alert, ScrollView, Platform,
 } from 'react-native';
 import { useBudget } from '../hooks/useBudget';
-import { CURRENCY_OPTIONS } from '../types/budget';
+import { CURRENCY_OPTIONS, FREE_DAILY_BUDGET } from '../types/budget';
 
 interface SettingsProps {
   onBack: () => void;
@@ -18,7 +18,7 @@ export default function Settings({ onBack }: SettingsProps) {
   const [selectedCurrency, setSelectedCurrency] = useState(settings.currency);
 
   const handleSave = async () => {
-    const budget = parseInt(budgetInput);
+    const budget = settings.isVip ? parseInt(budgetInput) : FREE_DAILY_BUDGET;
     if (isNaN(budget) || budget <= 0) {
       Alert.alert('請輸入有效的每日預算');
       return;
@@ -31,6 +31,17 @@ export default function Settings({ onBack }: SettingsProps) {
     Alert.alert('已儲存', '設定已更新', [
       { text: '確定', onPress: onBack },
     ]);
+  };
+
+  // VIP 區隔：免費版 ↔ VIP 切換（付費功能尚未開通，僅供測試）
+  const toggleVip = async () => {
+    const next = !settings.isVip;
+    await updateSettings({ ...settings, isVip: next });
+    if (next) {
+      Alert.alert('已升級 VIP', '已解鎖：無限歷史紀錄 + 自訂每日預算');
+    } else {
+      Alert.alert('已取消 VIP', '每日預算已恢復固定 1000 元，歷史紀錄限最近 5 天');
+    }
   };
 
   return (
@@ -52,14 +63,18 @@ export default function Settings({ onBack }: SettingsProps) {
           <View style={s.inputRow}>
             <Text style={s.currencyPrefix}>{selectedCurrency}</Text>
             <TextInput
-              style={s.input}
-              value={budgetInput}
+              style={[s.input, !settings.isVip && s.inputDisabled]}
+              value={settings.isVip ? budgetInput : FREE_DAILY_BUDGET.toString()}
               onChangeText={setBudgetInput}
               keyboardType="numeric"
               placeholder="1000"
               placeholderTextColor="#94A3B8"
+              editable={settings.isVip}
             />
           </View>
+          {!settings.isVip && (
+            <Text style={s.vipLockHint}>🔒 VIP 專屬：升級解鎖自訂每日預算</Text>
+          )}
         </View>
 
         {/* 幣別 */}
@@ -85,6 +100,33 @@ export default function Settings({ onBack }: SettingsProps) {
               )}
             </TouchableOpacity>
           ))}
+        </View>
+
+        {/* 會員方案（VIP 區隔） */}
+        <View style={s.section}>
+          <Text style={s.sectionTitle}>會員方案</Text>
+          <View style={[s.vipCard, settings.isVip && s.vipCardActive]}>
+            <View style={s.vipRow}>
+              <View style={s.vipInfo}>
+                <Text style={s.vipTitle}>
+                  {settings.isVip ? '👑 VIP 會員' : '免費版'}
+                </Text>
+                <Text style={s.vipDesc}>
+                  {settings.isVip
+                    ? '無限歷史紀錄 + 自訂每日預算'
+                    : '歷史紀錄 5 天 + 每日預算固定 1000'}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={toggleVip} style={s.vipBtn}>
+                <Text style={s.vipBtnText}>
+                  {settings.isVip ? '取消 VIP' : '升級 VIP'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+            {!settings.isVip && (
+              <Text style={s.vipHint}>※ 付費功能尚未開通，此開關僅供測試</Text>
+            )}
+          </View>
         </View>
 
         {/* 儲存 */}
@@ -155,6 +197,60 @@ const s = StyleSheet.create({
     fontSize: 20,
     color: '#0F172A',
     paddingVertical: 14,
+  },
+  inputDisabled: {
+    color: '#94A3B8',
+  },
+  vipCard: {
+    backgroundColor: '#fff',
+    borderWidth: 0.5,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    padding: 16,
+  },
+  vipCardActive: {
+    borderColor: '#D97706',
+    backgroundColor: '#FFFBEB',
+  },
+  vipRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  vipInfo: {
+    flex: 1,
+    marginRight: 12,
+  },
+  vipTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#0F172A',
+    marginBottom: 4,
+  },
+  vipDesc: {
+    fontSize: 13,
+    color: '#64748B',
+  },
+  vipBtn: {
+    backgroundColor: '#D97706',
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+  },
+  vipBtnText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  vipLockHint: {
+    fontSize: 12,
+    color: '#94A3B8',
+    marginTop: 8,
+  },
+  vipHint: {
+    fontSize: 12,
+    color: '#B45309',
+    marginTop: 10,
   },
   currencyOption: {
     flexDirection: 'row',

@@ -11,6 +11,7 @@ export interface AppSettings {
   dailyBudget: number; // 每日預算
   currency: string;    // 幣別符號，預設 NT$
   rollover: boolean;   // 結餘累積（V1 預設關閉）
+  isVip: boolean;      // VIP 會員（免費版為 false）
 }
 
 // 幣別選項
@@ -25,9 +26,14 @@ export const CURRENCY_OPTIONS = [
 // 快速扣款固定金額
 export const QUICK_AMOUNTS = [50, 100, 200, 500];
 
+// 免費版限制（VIP 區隔）
+export const FREE_DAILY_BUDGET = 1000; // 免費版固定每日預算
+export const FREE_HISTORY_DAYS = 5;   // 免費版歷史紀錄天數上限
+
 // 預設設定
 export const DEFAULT_SETTINGS: AppSettings = {
   dailyBudget: 1000,
   currency: 'NT$',
   rollover: false,
+  isVip: false,
 };

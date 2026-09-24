@@ -6,6 +6,8 @@ import {
   type DayRecord,
   type AppSettings,
   DEFAULT_SETTINGS,
+  FREE_DAILY_BUDGET,
+  FREE_HISTORY_DAYS,
 } from '../types/budget';
 
 export function useBudget() {
@@ -21,7 +23,14 @@ export function useBudget() {
         // 載入設定
         const savedSettings = await load<AppSettings>(KEYS.SETTINGS);
         const currentSettings = savedSettings ?? DEFAULT_SETTINGS;
-        setSettings(currentSettings);
+        // 免費版每日預算固定 1000（僅 VIP 可自訂）
+        const effectiveSettings = currentSettings.isVip
+          ? currentSettings
+          : { ...currentSettings, dailyBudget: FREE_DAILY_BUDGET };
+        setSettings(effectiveSettings);
+        if (effectiveSettings !== currentSettings) {
+          await save(KEYS.SETTINGS, effectiveSettings);
+        }
 
         // 載入所有紀錄
         const savedRecords = await load<DayRecord[]>(KEYS.RECORDS);
@@ -33,12 +42,21 @@ export function useBudget() {
         const existing = allRecords.find(r => r.date === today);
 
         if (existing) {
-          setTodayRecord(existing);
+          // 免費版：今日紀錄預算同步為固定額度
+          if (existing.budget !== effectiveSettings.dailyBudget) {
+            const corrected = { ...existing, budget: effectiveSettings.dailyBudget };
+            setTodayRecord(corrected);
+            const updated = allRecords.map(r => (r.date === today ? corrected : r));
+            setRecords(updated);
+            await save(KEYS.RECORDS, updated);
+          } else {
+            setTodayRecord(existing);
+          }
         } else {
           // 建立今日新紀錄
           const newRecord: DayRecord = {
             date: today,
-            budget: currentSettings.dailyBudget,
+            budget: effectiveSettings.dailyBudget,
             spent: 0,
             lastTransaction: null,
           };
@@ -97,14 +115,18 @@ export function useBudget() {
   // 更新設定
   const updateSettings = useCallback(
     async (newSettings: AppSettings) => {
-      setSettings(newSettings);
-      await save(KEYS.SETTINGS, newSettings);
+      // 免費版每日預算固定 1000（僅 VIP 可自訂）
+      const effective: AppSettings = newSettings.isVip
+        ? newSettings
+        : { ...newSettings, dailyBudget: FREE_DAILY_BUDGET };
+      setSettings(effective);
+      await save(KEYS.SETTINGS, effective);
 
       // 同步更新今日預算
       if (todayRecord) {
         const updated: DayRecord = {
           ...todayRecord,
-          budget: newSettings.dailyBudget,
+          budget: effective.dailyBudget,
         };
         await updateTodayRecord(updated);
       }
@@ -117,10 +139,13 @@ export function useBudget() {
     ? safeSubtract(todayRecord.budget, todayRecord.spent)
     : 0;
 
-  // 取得歷史紀錄（排除今天）
-  const historyRecords = records.filter(
+  // 取得歷史紀錄（排除今天；免費版只顯示最近 5 天）
+  const pastRecords = records.filter(
     r => r.date !== getTodayString()
   );
+  const historyRecords = settings.isVip
+    ? pastRecords
+    : pastRecords.slice(0, FREE_HISTORY_DAYS);
 
   return {
     loading,
