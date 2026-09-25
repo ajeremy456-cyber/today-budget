@@ -16,7 +16,8 @@
       "package": "com.todaybudget.app"
     },
     "web": {},
-    "plugins": [
+"plugins": [
+      "./plugins/withResolveWorkManager.js",
       [
         "expo-splash-screen",
         {
