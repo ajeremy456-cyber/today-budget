@@ -5,22 +5,25 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.todaybudget.app"
     },
     "android": {
       "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#F8FAFC"
       },
       "package": "com.todaybudget.app"
     },
     "web": {},
-"plugins": [
+    "plugins": [
       "./plugins/withResolveWorkManager.js",
       [
         "expo-splash-screen",
         {
+          "image": "./assets/icon.png",
           "resizeMode": "contain",
           "backgroundColor": "#F8FAFC"
         }
