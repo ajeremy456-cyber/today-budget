@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Today Budget",
-    "slug": "today-budget",
+    "name": "DayBudget 今日預算",
+    "slug": "DayBudget 今日預算",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
