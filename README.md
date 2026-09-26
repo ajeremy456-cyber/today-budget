@@ -84,6 +84,7 @@ npm start
 npm run android   # 在 Android 裝置/模擬器執行（開發版建置）
 npm run ios       # 在 iOS 裝置/模擬器執行（需 macOS）
 eas build --platform android --profile preview #打包APK測試
+eas build --platform android --profile production #打包ABB
 ```
 
 ## 桌面 Widget
