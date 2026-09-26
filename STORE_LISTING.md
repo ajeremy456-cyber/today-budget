@@ -3,7 +3,7 @@
 ## App 名稱（≤30 字元）
 
 ```
-今日預算 Today Budget
+DayBudget 今日預算
 ```
 
 ## 簡短描述（≤80 字元）
