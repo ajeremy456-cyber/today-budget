@@ -6,7 +6,7 @@ import { AndroidTodayBudgetWidget } from './AndroidTodayBudgetWidget';
 
 // 註冊 Widget Task Handler（module scope 執行，headless 環境啟動時生效）
 // 處理 WIDGET_ADDED / WIDGET_UPDATE / WIDGET_RESIZED：讀取本機資料渲染 Widget
-// WIDGET_DELETED / WIDGET_CLICK 不需處理（點擊預設開啟 App）
+// WIDGET_DELETED / WIDGET_CLICK 不需處理（clickAction="OPEN_APP" 由原生端直接處理，不會路由到 handler）
 registerWidgetTaskHandler(async ({ widgetAction, renderWidget }) => {
   if (widgetAction === 'WIDGET_DELETED' || widgetAction === 'WIDGET_CLICK') return;
 

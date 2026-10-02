@@ -25,6 +25,7 @@ export function AndroidTodayBudgetWidget({
 
   return (
     <FlexWidget
+      clickAction="OPEN_APP"
       style={{
         flexDirection: 'column',
         justifyContent: 'center',
