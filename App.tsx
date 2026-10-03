@@ -13,6 +13,13 @@ if (Platform.OS === 'android') {
   import('./src/widgets/registerWidgetTaskHandler').catch(() => {});
 }
 
+// 初始化內購（Google Play 買斷付費；Web 環境自動略過）
+if (Platform.OS === 'android' || Platform.OS === 'ios') {
+  import('./src/services/purchase')
+    .then(m => m.initIap())
+    .catch(() => {});
+}
+
 type Page = 'home' | 'history' | 'settings';
 
 export default function App() {

@@ -15,7 +15,8 @@
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#F8FAFC"
       },
-      "package": "com.todaybudget.app"
+      "package": "com.todaybudget.app",
+      "permissions": ["com.android.vending.BILLING"]
     },
     "web": {},
     "plugins": [

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, Alert, ScrollView, Platform,
@@ -33,14 +33,56 @@ export default function Settings({ onBack }: SettingsProps) {
     ]);
   };
 
-  // VIP 區隔：免費版 ↔ VIP 切換（付費功能尚未開通，僅供測試）
-  const toggleVip = async () => {
-    const next = !settings.isVip;
-    await updateSettings({ ...settings, isVip: next });
-    if (next) {
-      Alert.alert('已升級 VIP', '已解鎖：無限歷史紀錄 + 自訂每日預算');
-    } else {
-      Alert.alert('已取消 VIP', '每日預算已恢復固定 1000 元，歷史紀錄限最近 5 天');
+  // VIP 買斷付費
+  const [vipPrice, setVipPrice] = useState('NT$30');
+  const [buying, setBuying] = useState(false);
+  const settingsRef = useRef(settings);
+  settingsRef.current = settings;
+
+  // 載入 Play 商店實際定價 + 註冊 VIP 到手回呼
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const { setVipGrantedHandler, getVipProduct } = await import('../services/purchase');
+      if (!mounted) return;
+      setVipGrantedHandler(async () => {
+        if (!mounted) return;
+        await updateSettings({ ...settingsRef.current, isVip: true });
+        Alert.alert('VIP 已解鎖', '感謝購買！已解鎖：無限歷史紀錄 + 自訂每日預算');
+      });
+      const product = await getVipProduct();
+      if (mounted && product?.displayPrice) setVipPrice(product.displayPrice);
+    })();
+    return () => {
+      mounted = false;
+      import('../services/purchase')
+        .then(m => m.setVipGrantedHandler(null))
+        .catch(() => {});
+    };
+  }, []);
+
+  // 升級 VIP：已有買斷紀錄就直接還原，否則發起購買
+  const handleUpgrade = async () => {
+    setBuying(true);
+    try {
+      const { buyVip, restorePurchases } = await import('../services/purchase');
+      const restored = await restorePurchases();
+      if (restored) return; // handler 已處理授權與提示
+      await buyVip();
+    } catch (error) {
+      console.error('[Settings] 升級失敗:', error);
+      Alert.alert('無法開啟購買', '商品尚未上架或商店連線失敗，請稍後再試');
+    } finally {
+      setBuying(false);
+    }
+  };
+
+  // 還原購買（重裝 App 後解鎖）
+  const handleRestore = async () => {
+    const { restorePurchases } = await import('../services/purchase');
+    const restored = await restorePurchases();
+    if (!restored) {
+      Alert.alert('找不到購買紀錄', '此帳號沒有 VIP 買斷紀錄');
     }
   };
 
@@ -102,7 +144,7 @@ export default function Settings({ onBack }: SettingsProps) {
           ))}
         </View>
 
-        {/* 會員方案（VIP 區隔） */}
+        {/* 會員方案（VIP 買斷） */}
         <View style={s.section}>
           <Text style={s.sectionTitle}>會員方案</Text>
           <View style={[s.vipCard, settings.isVip && s.vipCardActive]}>
@@ -117,14 +159,28 @@ export default function Settings({ onBack }: SettingsProps) {
                     : '歷史紀錄 5 天 + 每日預算固定 1000'}
                 </Text>
               </View>
-              <TouchableOpacity onPress={toggleVip} style={s.vipBtn}>
-                <Text style={s.vipBtnText}>
-                  {settings.isVip ? '取消 VIP' : '升級 VIP'}
-                </Text>
-              </TouchableOpacity>
+              {!settings.isVip && (
+                <TouchableOpacity
+                  onPress={handleUpgrade}
+                  disabled={buying}
+                  style={s.vipBtn}
+                >
+                  <Text style={s.vipBtnText}>
+                    {buying ? '處理中…' : '升級 VIP'}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              {settings.isVip && <Text style={s.ownedBadge}>✓ 已解鎖</Text>}
             </View>
             {!settings.isVip && (
-              <Text style={s.vipHint}>※ 付費功能尚未開通，此開關僅供測試</Text>
+              <>
+                <Text style={s.vipHint}>
+                  一次性買斷 {vipPrice}，終身解鎖（Google Play 付費）
+                </Text>
+                <TouchableOpacity onPress={handleRestore} style={s.restoreBtn}>
+                  <Text style={s.restoreLink}>已購買？還原購買</Text>
+                </TouchableOpacity>
+              </>
             )}
           </View>
         </View>
@@ -251,6 +307,20 @@ const s = StyleSheet.create({
     fontSize: 12,
     color: '#B45309',
     marginTop: 10,
+  },
+  ownedBadge: {
+    fontSize: 13,
+    color: '#B45309',
+    fontWeight: '600',
+  },
+  restoreBtn: {
+    alignSelf: 'flex-start',
+    marginTop: 6,
+  },
+  restoreLink: {
+    fontSize: 12,
+    color: '#2563EB',
+    textDecorationLine: 'underline',
   },
   currencyOption: {
     flexDirection: 'row',

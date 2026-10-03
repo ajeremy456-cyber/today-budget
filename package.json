@@ -20,6 +20,8 @@
     "react-dom": "19.2.3",
     "react-native": "0.86.3",
     "react-native-android-widget": "^0.22.1",
+    "react-native-iap": "^16.7.2",
+    "react-native-nitro-modules": "^0.37.1",
     "react-native-web": "^0.21.2"
   },
   "devDependencies": {
